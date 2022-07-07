@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.use_case;
 
-import lombok.extern.slf4j.XSlf4j;
+import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.validation.Validator;
 
@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@XSlf4j
+@Slf4j
 public class UserUseCase {
     private static Map<Integer, User> Users = new HashMap<>();
     private static Integer maxId = 0;
