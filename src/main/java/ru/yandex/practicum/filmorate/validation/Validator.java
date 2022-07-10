@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.validation;
 
+import java.util.List;
+
 public class Validator {
-    boolean isOneErrorFail;
-    boolean isThrowException;
+    private boolean isOneErrorFail;
+    private boolean isThrowException;
 
     public Validator setIsOneErrorFail(boolean oneErrorFail) {
         this.isOneErrorFail = oneErrorFail;
@@ -14,10 +16,10 @@ public class Validator {
         return this;
     }
 
-    public boolean validate(IValid testedObject) {
+    public boolean validate(List<ValidationChain> rules) {
         boolean check = true;
         StringBuilder messageBuilder = new StringBuilder();
-        for (ValidationChain chain : testedObject.rules()) {
+        for (ValidationChain chain : rules) {
             for (ValidationRule rule : chain.getValidations()) {
                 rule.setSetThrowingException(isOneErrorFail);
                 boolean isValid = rule.validate();

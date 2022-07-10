@@ -10,7 +10,7 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    @PostMapping("")
+    @PostMapping()
     public User create(@RequestBody User user) {
         if (user == null) {
             throw new RuntimeException("Пустой запрос");
@@ -18,7 +18,7 @@ public class UserController {
         return UserUseCase.createUser(user);
     }
 
-    @PutMapping("")
+    @PutMapping()
     public User update(@RequestBody User user) {
         if (user == null) {
             throw new RuntimeException("Пустой запрос");
@@ -27,7 +27,7 @@ public class UserController {
 
     }
 
-    @GetMapping("")
+    @GetMapping()
     public List<User> get() {
         return UserUseCase.getUsers();
     }

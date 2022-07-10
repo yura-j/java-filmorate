@@ -3,7 +3,9 @@ package ru.yandex.practicum.filmorate.use_case;
 import lombok.extern.slf4j.Slf4j;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.validation.ValidationChain;
 import ru.yandex.practicum.filmorate.validation.Validator;
+import ru.yandex.practicum.filmorate.validation.checkers.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,8 +14,8 @@ import java.util.Map;
 
 @Slf4j
 public class FilmUseCase {
-    private static Map<Integer, Film> Films = new HashMap<>();
-    private static Integer maxId = 0;
+    private static Map<Long, Film> Films = new HashMap<>();
+    private static Long maxId = 0L;
 
     private static final Validator validator = new Validator() {{
         setIsOneErrorFail(false);
@@ -45,10 +47,30 @@ public class FilmUseCase {
 
     public static void validateAndLog(Film film) {
         validator.setThrowException(false);
-        if (!validator.validate(film)) {
+        if (!validator.validate(getFilmValidationRules(film))) {
             log.info("Фильм " + film + "Не прошел валидацию");
         }
         validator.setThrowException(true);
-        validator.validate(film);
+        validator.validate(getFilmValidationRules(film));
+    }
+
+    public static List<ValidationChain> getFilmValidationRules(Film film) {
+        return List.of(
+                ValidationChain.of(film.getName(), "name", "Имя фильма")
+                        .add(new NotNull())
+                        .add(new NotBlank()),
+
+                ValidationChain.of(film.getDescription(), "description", "Описание")
+                        .add(new NotNull())
+                        .add(new LimitedLetters(200)),
+
+                ValidationChain.of(film.getDuration(), "duration", "Продолжительность фильма")
+                        .add(new NotNull())
+                        .add(new Positive()),
+
+                ValidationChain.of(film.getReleaseDate(), "releaseDate", "Дата выхода фильма")
+                        .add(new NotNull())
+                        .add(new ElderThen(Film.CINEMA_FOUNDATION_DATE))
+        );
     }
 }
