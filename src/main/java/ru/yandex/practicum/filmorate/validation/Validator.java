@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.validation;
 
+import ru.yandex.practicum.filmorate.error.ValidationException;
+
 import java.util.List;
 
 public class Validator {
