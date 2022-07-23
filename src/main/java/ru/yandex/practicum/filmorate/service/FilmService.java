@@ -67,7 +67,7 @@ public class FilmService {
         User user =  userStorage
                 .getUsers()
                 .stream()
-                .filter(u -> u.getId() == id)
+                .filter(u -> u.getId() == userId)
                 .findFirst()
                 .orElse(null);
         if (user == null) {
