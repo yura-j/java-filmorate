@@ -1,16 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.error.NotFoundException;
-import ru.yandex.practicum.filmorate.error.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/films")
@@ -51,12 +46,12 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public Film setLike(@PathVariable long id, @PathVariable long userId) {
-        return service.setLike(id,userId);
+        return service.setLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public Film deleteLike(@PathVariable long id, @PathVariable long userId) {
-        return service.deleteLike(id,userId);
+        return service.deleteLike(id, userId);
     }
 
     @GetMapping("/popular")

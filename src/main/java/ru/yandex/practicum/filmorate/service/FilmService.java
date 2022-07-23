@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.error.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.validation.ValidationChain;
 import ru.yandex.practicum.filmorate.validation.Validator;
 import ru.yandex.practicum.filmorate.validation.checkers.*;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FilmService {
     private final FilmStorage storage;
-    private final UserService userService;
+    private final UserStorage userStorage;
 
     private final Validator validator = new Validator() {{
         setIsOneErrorFail(false);
@@ -26,9 +27,9 @@ public class FilmService {
     }};
 
     @Autowired
-    public FilmService(FilmStorage storage, UserService userService) {
+    public FilmService(FilmStorage storage, UserStorage userStorage) {
         this.storage = storage;
-        this.userService = userService;
+        this.userStorage = userStorage;
     }
 
     public List<Film> getFilms() {
@@ -63,7 +64,15 @@ public class FilmService {
         if (film == null) {
             return film;
         }
-        User user = userService.getUser(userId);
+        User user =  userStorage
+                .getUsers()
+                .stream()
+                .filter(u -> u.getId() == id)
+                .findFirst()
+                .orElse(null);
+        if (user == null) {
+            throw new NotFoundException("Пользователь не найден");
+        }
         film.getLikedUsers().remove(user.getId());
         return film;
     }

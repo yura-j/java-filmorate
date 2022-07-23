@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface UserStorage {
     List<User> getUsers();
+
     User updateUser(User film);
+
     User createUser(User film);
 }
