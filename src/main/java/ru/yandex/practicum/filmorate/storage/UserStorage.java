@@ -8,7 +8,11 @@ import java.util.List;
 public interface UserStorage {
     List<User> getUsers();
 
-    User updateUser(User film);
+    User updateUser(User user);
 
-    User createUser(User film);
+    User createUser(User user);
+
+    User getById(Long id);
+
+    void initRelationsGreedy(User user);
 }

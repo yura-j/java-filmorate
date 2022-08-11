@@ -2,9 +2,12 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.error.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.UserFriendship;
+import ru.yandex.practicum.filmorate.storage.UserFriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.validation.ValidationChain;
 import ru.yandex.practicum.filmorate.validation.Validator;
@@ -13,13 +16,13 @@ import ru.yandex.practicum.filmorate.validation.checkers.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class UserService {
     private final UserStorage storage;
+    private final UserFriendshipStorage friendshipStorage;
 
     private final Validator validator = new Validator() {{
         setIsOneErrorFail(false);
@@ -27,8 +30,11 @@ public class UserService {
     }};
 
     @Autowired
-    public UserService(UserStorage storage) {
+    public UserService(
+            @Qualifier("UserDbStorage") UserStorage storage,
+            @Qualifier("UserFriendshipDbStorage") UserFriendshipStorage friendshipStorage) {
         this.storage = storage;
+        this.friendshipStorage = friendshipStorage;
     }
 
     public List<User> getUsers() {
@@ -56,13 +62,16 @@ public class UserService {
         User user = getUserById(id);
         User friend = getUserById(friendId);
 
-        if (user == null || friend == null) {
+        if (user == null
+                || friend == null) {
             throw new NotFoundException("не найдено");
         }
 
-        user.getFriends().add(friendId);
-        friend.getFriends().add(id);
-        return user;
+        UserFriendship friendship = friendshipStorage.getByUserIdAndFriendId(id, friendId);
+        if (friendship == null) {
+            friendshipStorage.create(new UserFriendship(null, user, friend));
+        }
+        return getUserById(user.getId());
     }
 
     public User deleteFromFriendList(long id, long friendId) {
@@ -74,49 +83,26 @@ public class UserService {
             return user;
         }
 
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(id);
-        return user;
+        UserFriendship friendship = friendshipStorage.getByUserIdAndFriendId(friendId, id);
+        if (friendship != null) {
+           friendshipStorage.delete(friendship.getId());
+        }
+        return getUserById(id);
     }
 
     public List<User> getFriends(long id) {
         User user = getUserById(id);
 
         if (user == null) {
-            return new ArrayList<>();
+            return null;
         }
-
-        Set<Long> friendIds = user.getFriends();
-
-        return storage
-                .getUsers()
-                .stream()
-                .filter(u -> friendIds.contains(u.getId()))
-                .collect(Collectors.toList());
+        return new ArrayList<>(user.getFriends());
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
-        User user = getUserById(id);
 
-        User otherUser = getUserById(otherId);
-
-        if (user == null || otherUser == null) {
-            return new ArrayList<>();
-        }
-
-        Set<Long> friendIds = user.getFriends();
-
-        List<Long> commonFriendIds = otherUser
-                .getFriends()
-                .stream()
-                .filter(friendIds::contains)
-                .collect(Collectors.toList());
-
-        return storage
-                .getUsers()
-                .stream()
-                .filter(u -> commonFriendIds.contains(u.getId()))
-                .collect(Collectors.toList());
+        return friendshipStorage
+                .getCommonFriends(id, otherId);
     }
 
     public User getUser(long id) {
@@ -158,10 +144,6 @@ public class UserService {
 
     private User getUserById(long id) {
         return storage
-                .getUsers()
-                .stream()
-                .filter(u -> u.getId() == id)
-                .findFirst()
-                .orElse(null);
+                .getById(id);
     }
 }

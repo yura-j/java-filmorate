@@ -29,8 +29,8 @@ class ValidatorTest {
 
     @BeforeEach
     void setTestEntities() {
-        fulfilledFilm = new Film(1L, "name", "desc", LocalDate.now().minusYears(20), 100);
-        fulfilledUser = new User(1L, "email@", "login", "name", LocalDate.now().minusYears(20));
+        /*fulfilledFilm = new Film(1L, "name", "desc", LocalDate.now().minusYears(20), 100);
+        fulfilledUser = new User(1L, "email@", "login", "name", LocalDate.now().minusYears(20));*/
     }
 
     @Test
