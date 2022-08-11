@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.validation;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.yandex.practicum.filmorate.error.ValidationException;
 
 @Getter
 @Setter
