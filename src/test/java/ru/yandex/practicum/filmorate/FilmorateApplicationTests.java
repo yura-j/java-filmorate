@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.error.NotFoundException;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.model.UserLikeFilm;
 import ru.yandex.practicum.filmorate.storage.db.*;
 
 @SpringBootTest
@@ -24,12 +22,12 @@ class FilmorateApplicationTests {
 
     @Test
     public void testFindUserById() {
-        Assertions.assertThrows(NotFoundException.class, ()->userStorage.getById(1L));
+        Assertions.assertThrows(NotFoundException.class, () -> userStorage.getById(1L));
     }
 
     @Test
     public void testFindFilmById() {
-        Assertions.assertThrows(NotFoundException.class, ()->filmDbStorage.getById(1L));
+        Assertions.assertThrows(NotFoundException.class, () -> filmDbStorage.getById(1L));
     }
 
     @Test

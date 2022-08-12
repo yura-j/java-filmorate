@@ -14,10 +14,9 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import java.time.LocalDate;
 
 class ValidatorTest {
+    private static Validator validator;
     private Film fulfilledFilm;
     private User fulfilledUser;
-
-    private static Validator validator;
 
     @BeforeAll
     static void init() {

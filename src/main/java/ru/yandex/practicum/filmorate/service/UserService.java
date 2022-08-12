@@ -16,7 +16,6 @@ import ru.yandex.practicum.filmorate.validation.checkers.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -35,6 +34,27 @@ public class UserService {
             @Qualifier("UserFriendshipDbStorage") UserFriendshipStorage friendshipStorage) {
         this.storage = storage;
         this.friendshipStorage = friendshipStorage;
+    }
+
+    public static List<ValidationChain> getUserValidationRules(User user) {
+        return List.of(
+                ValidationChain.of(user.getName(), "name", "Имя пользователя")
+                        .add(new NotNull()),
+
+                ValidationChain.of(user.getEmail(), "email", "Емайл")
+                        .add(new NotNull())
+                        .add(new NotBlank())
+                        .add(new EmailSyntax()),
+
+                ValidationChain.of(user.getLogin(), "login", "Логин")
+                        .add(new NotNull())
+                        .add(new NotBlank())
+                        .add(new HaveNoSpaces()),
+
+                ValidationChain.of(user.getBirthday(), "birthday", "Дата рождения")
+                        .add(new NotNull())
+                        .add(new YoungerThen(LocalDate.now()))
+        );
     }
 
     public List<User> getUsers() {
@@ -85,7 +105,7 @@ public class UserService {
 
         UserFriendship friendship = friendshipStorage.getByUserIdAndFriendId(friendId, id);
         if (friendship != null) {
-           friendshipStorage.delete(friendship.getId());
+            friendshipStorage.delete(friendship.getId());
         }
         return getUserById(id);
     }
@@ -110,27 +130,6 @@ public class UserService {
             throw new NotFoundException("пользователь не найден");
         }
         return getUserById(id);
-    }
-
-    public static List<ValidationChain> getUserValidationRules(User user) {
-        return List.of(
-                ValidationChain.of(user.getName(), "name", "Имя пользователя")
-                        .add(new NotNull()),
-
-                ValidationChain.of(user.getEmail(), "email", "Емайл")
-                        .add(new NotNull())
-                        .add(new NotBlank())
-                        .add(new EmailSyntax()),
-
-                ValidationChain.of(user.getLogin(), "login", "Логин")
-                        .add(new NotNull())
-                        .add(new NotBlank())
-                        .add(new HaveNoSpaces()),
-
-                ValidationChain.of(user.getBirthday(), "birthday", "Дата рождения")
-                        .add(new NotNull())
-                        .add(new YoungerThen(LocalDate.now()))
-        );
     }
 
     private void validateAndLog(User user) {

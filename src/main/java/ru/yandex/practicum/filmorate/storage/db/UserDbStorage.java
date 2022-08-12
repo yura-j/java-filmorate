@@ -23,14 +23,12 @@ import java.util.stream.Collectors;
 @Repository
 @Qualifier("UserDbStorage")
 public class UserDbStorage implements UserStorage {
+    public static final String TABLE_NAME = "users";
     private final Map<String, List<?>> cache = new HashMap<>();
     private final JdbcTemplate jdbcTemplate;
-    public static final String TABLE_NAME = "users";
-    private final UserFriendshipStorage friendStorage;
 
     @Autowired
     public UserDbStorage(@Qualifier("UserFriendshipDbStorage") UserFriendshipStorage friendStorage, JdbcTemplate jdbcTemplate) {
-        this.friendStorage = friendStorage;
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -71,7 +69,7 @@ public class UserDbStorage implements UserStorage {
                 ))
                 .execute()
                 .id();
-        if (result == null){
+        if (result == null) {
             throw new NotFoundException("Пользователя с указанным идентификатором нет");
         }
         return user;
@@ -108,7 +106,7 @@ public class UserDbStorage implements UserStorage {
                 .map(this::map)
                 .execute()
                 .one();
-        if (user ==  null) {
+        if (user == null) {
             throw new NotFoundException("не найдено");
         }
         initRelationsGreedy(user);
@@ -119,7 +117,27 @@ public class UserDbStorage implements UserStorage {
     public void initRelationsGreedy(User user) {
         List<UserFriendship> userFriendship = cache.containsKey(UserFriendshipDbStorage.FRIEND_TABLE)
                 ? (List<UserFriendship>) cache.get(UserFriendshipDbStorage.FRIEND_TABLE)
-                : friendStorage.get();
+                : new EasyJdbc<UserFriendship>(jdbcTemplate)
+                .select()
+                .table(UserFriendshipDbStorage.FRIEND_JOIN_WITHOUT_JOIN)
+                .fields("users_friendship.id, users.id, users.name, users.login, users.name, users.birthday, friends.*")
+                .where("friends.id  = users_friendship.friend_id AND users.id = users_friendship.user_id")
+                .map(((rs, rowNum) -> new UserFriendship(
+                        rs.getLong("users_friendship.id")
+                        , new User(rs.getLong("users.id")
+                        , rs.getString("users.email")
+                        , rs.getString("users.login")
+                        , rs.getString("users.name")
+                        , LocalDate.parse(rs.getString("users.birthday")))
+
+                        , new User(rs.getLong(7)
+                        , rs.getString(8)
+                        , rs.getString(9)
+                        , rs.getString(10)
+                        , LocalDate.parse(rs.getString(11)))
+                )))
+                .execute()
+                .many();
         List<User> friends = userFriendship
                 .stream()
                 .filter(friendship -> friendship.getUser().getId() == user.getId())

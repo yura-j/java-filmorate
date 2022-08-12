@@ -4,7 +4,7 @@ import ru.yandex.practicum.filmorate.validation.ValidationRule;
 
 public class LimitedLetters extends ValidationRule {
 
-    private int limit;
+    private final int limit;
 
     public LimitedLetters(int limit) {
         this.limit = limit;

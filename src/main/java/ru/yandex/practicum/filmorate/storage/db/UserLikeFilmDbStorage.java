@@ -17,10 +17,10 @@ import java.util.Map;
 @Repository
 @Qualifier("UserLikeFilmDbStorage")
 public class UserLikeFilmDbStorage implements UserLikeFilmStorage {
-    private final JdbcTemplate jdbcTemplate;
     public static final String LIKES_TABLE = "users_likes_films";
     public static final String LIKES_JOIN = "users_likes_films INNER JOIN users on users.id = users_likes_films.user_id" +
             " INNER JOIN films on films.id = users_likes_films.film_id ";
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
     public UserLikeFilmDbStorage(JdbcTemplate jdbcTemplate) {
@@ -64,13 +64,13 @@ public class UserLikeFilmDbStorage implements UserLikeFilmStorage {
                 .map(((rs, rowNum) -> new UserLikeFilm(
                         rs.getLong("users_likes_films.id")
                         , new Film(
-                            rs.getLong("films.id"),
-                            rs.getString("films.name"),
-                            rs.getString("films.description"),
-                            LocalDate.parse(rs.getString("films.release_date")),
-                            rs.getInt("films.duration"),
-                            rs.getLong("films.mpa_id")
-                         )
+                        rs.getLong("films.id"),
+                        rs.getString("films.name"),
+                        rs.getString("films.description"),
+                        LocalDate.parse(rs.getString("films.release_date")),
+                        rs.getInt("films.duration"),
+                        rs.getLong("films.mpa_id")
+                )
                         , new User(rs.getLong("users.id")
                         , rs.getString("users.email")
                         , rs.getString("login")
@@ -105,12 +105,12 @@ public class UserLikeFilmDbStorage implements UserLikeFilmStorage {
     @Override
     public Long delete(Long id) {
         new EasyJdbc<UserLikeFilm>(jdbcTemplate)
-            .delete()
-            .table(LIKES_TABLE)
-            .where("id = ? ")
-            .parameters(List.of(id))
-            .execute()
-            .id();
+                .delete()
+                .table(LIKES_TABLE)
+                .where("id = ? ")
+                .parameters(List.of(id))
+                .execute()
+                .id();
         return id;
     }
 

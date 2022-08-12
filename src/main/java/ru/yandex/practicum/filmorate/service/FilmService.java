@@ -42,6 +42,29 @@ public class FilmService {
         this.mpaStorage = mpaStorage;
     }
 
+    public static List<ValidationChain> getFilmValidationRules(Film film) {
+        return List.of(
+                ValidationChain.of(film.getName(), "name", "Имя фильма")
+                        .add(new NotNull())
+                        .add(new NotBlank()),
+
+                ValidationChain.of(film.getDescription(), "description", "Описание")
+                        .add(new NotNull())
+                        .add(new LimitedLetters(200)),
+
+                ValidationChain.of(film.getDuration(), "duration", "Продолжительность фильма")
+                        .add(new NotNull())
+                        .add(new Positive()),
+
+                ValidationChain.of(film.getReleaseDate(), "releaseDate", "Дата выхода фильма")
+                        .add(new NotNull())
+                        .add(new ElderThen(Film.CINEMA_FOUNDATION_DATE)),
+
+                ValidationChain.of(film.getMpa(), "mpa", "Рейтинг")
+                        .add(new NotNull())
+        );
+    }
+
     public List<Film> getFilms() {
         return storage.getFilms();
     }
@@ -111,29 +134,6 @@ public class FilmService {
             throw new NotFoundException("фильм не найден");
         }
         return getFilmById(id);
-    }
-
-    public static List<ValidationChain> getFilmValidationRules(Film film) {
-        return List.of(
-                ValidationChain.of(film.getName(), "name", "Имя фильма")
-                        .add(new NotNull())
-                        .add(new NotBlank()),
-
-                ValidationChain.of(film.getDescription(), "description", "Описание")
-                        .add(new NotNull())
-                        .add(new LimitedLetters(200)),
-
-                ValidationChain.of(film.getDuration(), "duration", "Продолжительность фильма")
-                        .add(new NotNull())
-                        .add(new Positive()),
-
-                ValidationChain.of(film.getReleaseDate(), "releaseDate", "Дата выхода фильма")
-                        .add(new NotNull())
-                        .add(new ElderThen(Film.CINEMA_FOUNDATION_DATE)),
-
-                ValidationChain.of(film.getMpa(), "mpa", "Рейтинг")
-                        .add(new NotNull())
-        );
     }
 
     private void validateAndLog(Film film) {

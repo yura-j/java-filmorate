@@ -4,10 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.UserFriendship;
-import ru.yandex.practicum.filmorate.model.UserLikeFilm;
 import ru.yandex.practicum.filmorate.storage.UserFriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.db.easy_jdbc.EasyJdbc;
 
@@ -18,14 +16,12 @@ import java.util.Map;
 @Repository
 @Qualifier("UserFriendshipDbStorage")
 public class UserFriendshipDbStorage implements UserFriendshipStorage {
-    private final JdbcTemplate jdbcTemplate;
     public static final String FRIEND_TABLE = "users_friendship";
-    public static final String FRIEND_JOIN = "users_friendship INNER JOIN users on users.id = users_friendship.user_id" +
-            " INNER JOIN users as friends on friends.id  = users_friendship.friend_id ";
     public static final String FRIEND_JOIN_WITHOUT_JOIN = "users_friendship, users, users as friends";
     public static final String COMMON_FRIEND_JOIN = "users_friendship INNER JOIN users_friendship as another_users_friendship" +
             " ON users_friendship.friend_id = another_users_friendship.friend_id" +
             " INNER JOIN users on users_friendship.friend_id = users.id";
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
     public UserFriendshipDbStorage(JdbcTemplate jdbcTemplate) {
@@ -65,14 +61,14 @@ public class UserFriendshipDbStorage implements UserFriendshipStorage {
                 .select()
                 .table(COMMON_FRIEND_JOIN)
                 .fields("users_friendship.*, another_users_friendship.*, users.*")
-                .where("users_friendship.user_id = ? AND another_users_friendship.user_id = ?" )
+                .where("users_friendship.user_id = ? AND another_users_friendship.user_id = ?")
                 .parameters(List.of(userId, anotherUserId))
-                .map(((rs, rowNum) ->  new User(rs.getLong("users.id")
-                                , rs.getString("users.email")
-                                , rs.getString("users.login")
-                                , rs.getString("users.name")
-                                , LocalDate.parse(rs.getString("users.birthday")))
-                        ))
+                .map(((rs, rowNum) -> new User(rs.getLong("users.id")
+                        , rs.getString("users.email")
+                        , rs.getString("users.login")
+                        , rs.getString("users.name")
+                        , LocalDate.parse(rs.getString("users.birthday")))
+                ))
                 .execute()
                 .many();
     }

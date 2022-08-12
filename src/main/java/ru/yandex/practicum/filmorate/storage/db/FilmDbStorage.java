@@ -13,24 +13,24 @@ import ru.yandex.practicum.filmorate.storage.db.easy_jdbc.EasyJdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Repository
 @Qualifier("FilmDbStorage")
 public class FilmDbStorage implements FilmStorage {
-    private UserLikeFilmStorage likeStorage;
-    private final JdbcTemplate jdbcTemplate;
     public static final String TABLE_NAME = "films";
     public static final String FILM_GENRES_TABLE = "film_has_genres";
     public static final String MPA_TABLE = "mpa_rating";
     public static final String FILM_GENRES_JOIN = "film_has_genres INNER JOIN genres on genres.id = film_has_genres.genre_id";
-
+    private final JdbcTemplate jdbcTemplate;
     private final Map<String, List<?>> cache = new HashMap<>();
 
     @Autowired
     public FilmDbStorage(@Qualifier("UserLikeFilmDbStorage") UserLikeFilmStorage likeStorage, JdbcTemplate jdbcTemplate) {
-        this.likeStorage = likeStorage;
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -189,7 +189,23 @@ public class FilmDbStorage implements FilmStorage {
                 .map(((rs, rowNum) -> new Mpa(rs.getLong("mpa_rating.id"), rs.getString("mpa_rating.description"), rs.getString("mpa_rating.name"))))
                 .execute()
                 .one();
-        List<UserLikeFilm> filmLikes = likeStorage.getByFilm(film);
+        List<UserLikeFilm> filmLikes = new EasyJdbc<UserLikeFilm>(jdbcTemplate)
+                .select()
+                .table(UserLikeFilmDbStorage.LIKES_JOIN)
+                .fields("users_likes_films.id, users.id, users.name, users.login, users.email, users.birthday")
+                .where("users_likes_films.film_id = ? ")
+                .parameters(List.of(film.getId()))
+                .map(((rs, rowNum) -> new UserLikeFilm(
+                        rs.getLong("users_likes_films.id")
+                        , film
+                        , new User(rs.getLong("users.id")
+                        , rs.getString("users.email")
+                        , rs.getString("users.login")
+                        , rs.getString("users.name")
+                        , LocalDate.parse(rs.getString("users.birthday"))
+                ))))
+                .execute()
+                .many();
         film.setGenres(new LinkedHashSet<>(filmGenres));
         film.setLikes(new LinkedHashSet<>(filmLikes));
         film.setMpa(filmMpa);
@@ -228,7 +244,28 @@ public class FilmDbStorage implements FilmStorage {
 
         List<UserLikeFilm> likes = cache.containsKey(UserLikeFilmDbStorage.LIKES_JOIN)
                 ? (List<UserLikeFilm>) cache.get(UserLikeFilmDbStorage.LIKES_JOIN)
-                : likeStorage.get();
+                : new EasyJdbc<UserLikeFilm>(jdbcTemplate)
+                .select()
+                .table(UserLikeFilmDbStorage.LIKES_JOIN)
+                .fields("users.id, users_likes_films.id, users.name, users.login, users.email, users.birthday, " +
+                        "films.id, films.name, films.description, films.release_date, films.duration, films.mpa_id")
+                .map(((rs, rowNum) -> new UserLikeFilm(
+                        rs.getLong("users_likes_films.id")
+                        , new Film(
+                        rs.getLong("films.id"),
+                        rs.getString("films.name"),
+                        rs.getString("films.description"),
+                        LocalDate.parse(rs.getString("films.release_date")),
+                        rs.getInt("films.duration"),
+                        rs.getLong("films.mpa_id"))
+                        , new User(rs.getLong("users.id")
+                        , rs.getString("users.email")
+                        , rs.getString("users.login")
+                        , rs.getString("users.name")
+                        , LocalDate.parse(rs.getString("users.birthday")))
+                )))
+                .execute()
+                .many();
 
         Mpa filmMpa = mpa
                 .stream()
