@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.error.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -13,10 +14,9 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import java.time.LocalDate;
 
 class ValidatorTest {
+    private static Validator validator;
     private Film fulfilledFilm;
     private User fulfilledUser;
-
-    private static Validator validator;
 
     @BeforeAll
     static void init() {
@@ -29,7 +29,8 @@ class ValidatorTest {
 
     @BeforeEach
     void setTestEntities() {
-        fulfilledFilm = new Film(1L, "name", "desc", LocalDate.now().minusYears(20), 100);
+        fulfilledFilm = new Film(1L, "name", "desc", LocalDate.now().minusYears(20), 100, 2L);
+        fulfilledFilm.setMpa(new Mpa(2L, null, null));
         fulfilledUser = new User(1L, "email@", "login", "name", LocalDate.now().minusYears(20));
     }
 

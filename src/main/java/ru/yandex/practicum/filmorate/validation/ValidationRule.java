@@ -8,8 +8,8 @@ import ru.yandex.practicum.filmorate.error.ValidationException;
 @Setter
 public abstract class ValidationRule {
     protected ValidationValueBox valueBox;
-    private boolean isSetThrowingException;
     protected String message = "Данные не корректны";
+    private boolean isSetThrowingException;
 
     protected abstract boolean checkValue();
 

@@ -10,4 +10,6 @@ public interface FilmStorage {
     Film updateFilm(Film film);
 
     Film createFilm(Film film);
+
+    Film getById(Long id);
 }

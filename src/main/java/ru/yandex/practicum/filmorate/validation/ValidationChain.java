@@ -7,8 +7,8 @@ import java.util.List;
 
 @Getter
 public class ValidationChain {
-    private List<ValidationRule> validations = new ArrayList<>();
-    private ValidationValueBox value;
+    private final List<ValidationRule> validations = new ArrayList<>();
+    private final ValidationValueBox value;
 
     private ValidationChain(ValidationValueBox value) {
         this.value = value;

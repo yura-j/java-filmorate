@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
 
 public class YoungerThen extends ValidationRule {
 
-    private LocalDate comparedDate;
+    private final LocalDate comparedDate;
 
     public YoungerThen(LocalDate comparedDate) {
         this.comparedDate = comparedDate;
